@@ -6,7 +6,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -14,39 +13,66 @@ import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int NUM_ROWS = 12;
-    private static final int NUM_COLS = 12;
+    private static final int DIMENSION_FACIL = 8;
     private static final int MINAS_FACIL = 10;
-    private static final int MINAS_MEDIO = 12;
-    private static final int MINAS_DIFICIL = 15;
+    private static final int DIMENSION_AMATEUR = 12;
+    private static final int MINAS_AMATEUR = 30;
+    private static final int DIMENSION_PRO = 16;
+    private static final int MINAS_PRO = 60;
+    private Resources res;
+
     private static Random rnd;
 
-    Button buttons[][] = new Button[NUM_ROWS][NUM_COLS];
+    Button buttons[][];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        crearBotonesDinamico();
-        crearTableroConMinas();
+        setContentView(R.layout.activity_main);
+        rnd = new Random();
+        Resources res = getResources();
+        inicializar(DIMENSION_FACIL);
     }
 
-    public void crearBotonesDinamico() {
+    // Hace más comodo reiniciar el juego y añadir el método a los diálogos.
+    public void inicializar(int dimension) {
+        switch (dimension) {
+            // POR DEFECTO DIMENSION_FACIL
+            case DIMENSION_AMATEUR:
+                buttons = new Button[DIMENSION_AMATEUR][DIMENSION_AMATEUR];
+                crearBotonesDinamico(DIMENSION_AMATEUR);
+                crearTableroConMinas(DIMENSION_AMATEUR, MINAS_AMATEUR);
+                break;
+            case DIMENSION_PRO:
+                buttons = new Button[DIMENSION_PRO][DIMENSION_PRO];
+                crearBotonesDinamico(DIMENSION_PRO);
+                crearTableroConMinas(DIMENSION_PRO, MINAS_PRO);
+                break;
+            default:
+                buttons = new Button[DIMENSION_FACIL][DIMENSION_FACIL];
+                crearBotonesDinamico(DIMENSION_FACIL);
+                crearTableroConMinas(DIMENSION_FACIL, MINAS_FACIL);
+                break;
+        }
+    }
+
+    /**
+     * Se encarga de crear un TableLayout y rellenarlo de los botones del tablero.
+     * @param dimension
+     */
+    public void crearBotonesDinamico(int dimension) {
         TableLayout table = (TableLayout) findViewById(R.id.tableForButtons);
         table.setPadding(0,0,0,0);
-        // ESTO ES LO QUE HACE QUE SEA MÁS CUADRADO, PERO CAMBIAR PORQUE ES UNA TREMENDA CHAPUZA
 
+        // ESTO ES LO QUE HACE QUE SEA MÁS CUADRADO, PERO CAMBIAR PORQUE ES UNA TREMENDA CHAPUZA
         table.setPadding(0,0,0,400);
 
-        for (int row = 0; row < NUM_ROWS; row++) {
+        for (int row = 0; row < dimension; row++) {
             TableRow tableRow = new TableRow(this);
             tableRow.setLayoutParams(new TableLayout.LayoutParams(
                     TableLayout.LayoutParams.WRAP_CONTENT,
@@ -55,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
             tableRow.setPadding(0, 0, 0, 0);
             table.addView(tableRow);
 
-            for (int col = 0; col < NUM_COLS; col++){
+            for (int col = 0; col < dimension; col++){
                 final int FINAL_COL = col;
                 final int FINAL_ROW = row;
 
@@ -87,57 +113,120 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void crearTableroConMinas() {
+/*    private void crearTableroConMinas() {
         // HashMap para que no se repitan los valores y no haya dos minas
         // superpuestas
-        HashMap<Integer,Integer> hashMap = new HashMap<Integer, Integer>();
+        HashMap<Integer, Integer> hashMap = new HashMap<Integer, Integer>();
         rnd = new Random();
         while(hashMap.size() < 10) {
             hashMap.put(rnd.nextInt(NUM_COLS), rnd.nextInt(NUM_COLS));
         }
         Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile03);
         Resources resource = getResources();
+
         // Colocamos las minas usando los valores no repetidos
         for (Map.Entry<Integer, Integer> set : hashMap.entrySet()) {
             buttons[set.getKey()][set.getValue()].setText("-1");
             buttons[set.getKey()][set.getValue()].setBackground(new BitmapDrawable(resource, originalBitmap));
         }
     }
+*/
 
+    /**
+     * Asigna las minas necesarias para cada dificultad de juego, cambiando su texto a -1 (String).
+     * @param dimension
+     * @param numMinasDificultad
+     */
+    private void crearTableroConMinas(int dimension, int numMinasDificultad) {
+        int numMinas = 0;
+        for(int i = 0; i < dimension; i++) {
+            for(int j = 0;  j < dimension; j++) {
+                int fila = rnd.nextInt(dimension);
+                int columna = rnd.nextInt(dimension);
+                // Nos aseguramos de que no se superpongan minas y de que haya
+                // un número adecuado al nivel
+                if (!buttons[fila][columna].getText().equals("-1") && (numMinas < numMinasDificultad)) {
+                    numMinas++;
+                    Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile03);
+                    Resources resource = getResources();
+                    buttons[fila][columna].setText("-1");
+                    buttons[fila][columna].setBackground(new BitmapDrawable(resource, originalBitmap));
+                }
+            }
+        }
+    }
+
+    private void comprobar(int i, int j) {
+        int contMinas = 0;
+        if(i == 0 && j == 0) { // Estamos en la esquina superior izquierda
+            if(buttons[i+1][j].getText().equals("-1")) {
+                contMinas++;
+            } else if(buttons[i+1][j].getText().equals("0")) {
+                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
+                Resources resource = getResources();
+                buttons[i][j].setBackground(new BitmapDrawable(resource, originalBitmap));
+                comprobar(i+1, j);
+            }
+            switch (contMinas) {
+                case 1:
+                    Bitmap bit1 = BitmapFactory.decodeResource(getResources(), R.drawable.tile14);
+                    buttons[i][j].setBackground(new BitmapDrawable(res, bit1));
+                    break;
+                case 2:
+                    Bitmap bit2 = BitmapFactory.decodeResource(getResources(), R.drawable.tile13);
+                    buttons[i][j].setBackground(new BitmapDrawable(res, bit2));
+                    break;
+                case 3:
+                    Bitmap bit3 = BitmapFactory.decodeResource(getResources(), R.drawable.tile12);
+                    buttons[i][j].setBackground(new BitmapDrawable(res, bit3));
+                    break;
+                case 4:
+                    Bitmap bit4 = BitmapFactory.decodeResource(getResources(), R.drawable.tile11);
+                    buttons[i][j].setBackground(new BitmapDrawable(res, bit4));
+                    break;
+                case 5:
+                    Bitmap bit5 = BitmapFactory.decodeResource(getResources(), R.drawable.tile10);
+                    buttons[i][j].setBackground(new BitmapDrawable(res, bit5));
+                    break;
+                case 6:
+                    Bitmap bit6 = BitmapFactory.decodeResource(getResources(), R.drawable.tile09);
+                    buttons[i][j].setBackground(new BitmapDrawable(res, bit6));
+                    break;
+                case 7:
+                    Bitmap bit7 = BitmapFactory.decodeResource(getResources(), R.drawable.tile08);
+                    buttons[i][j].setBackground(new BitmapDrawable(res, bit7));
+                    break;
+                case 8:
+                    Bitmap bit8 = BitmapFactory.decodeResource(getResources(), R.drawable.tile07);
+                    buttons[i][j].setBackground(new BitmapDrawable(res, bit8));
+                    break;
+            }
+        }
+    }
+    private void calcularNumeros(int dimension) {
+        for(int i = 0; i < dimension; i++) {
+            for(int j = 0; j < dimension; j++) {
+
+            }
+        }
+    }
 
     private void gridButtonClicked(int col, int row) {
         // Toast.makeText(this, "Button clicked: " + col + "," + row,
         //        Toast.LENGTH_SHORT).show();
         Button button = buttons[row][col];
 
-        // Lock Button Sizes:
-        lockButtonSizes();
 
         // Lógica de a ver qué cosiña ponemos
 
-        // Scale image to button: Only works in JellyBean!
-        // Image from Crystal Clear icon set, under LGPL
-        // http://commons.wikimedia.org/wiki/Crystal_Clear
+
         Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile04);
         Resources resource = getResources();
         button.setBackground(new BitmapDrawable(resource, originalBitmap));
 
     }
 
-    private void lockButtonSizes() {
-        for (int row = 0; row < NUM_ROWS; row++) {
-            for (int col = 0; col < NUM_COLS; col++) {
-                Button button = buttons[row][col];
 
-                // Botones cuadrados
-                int width = button.getWidth();
-                button.setMinWidth(width);
-                button.setMaxWidth(width);
-                button.setMinHeight(width);
-                button.setMaxHeight(width);
-            }
-        }
-    }
 
 
     @Override
