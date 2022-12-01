@@ -1,0 +1,7 @@
+  <resources>
+
+        <string name="app_name">Minas</string>
+        <string name="action_settings">Configuración</string>
+        <string name="hello_world">Minesweeper</string>
+
+    </resources>
