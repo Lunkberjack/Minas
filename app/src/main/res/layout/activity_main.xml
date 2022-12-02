@@ -1,52 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/totales"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="24sp"
+        android:text="Minas totales:"
+        android:textAlignment="viewStart"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/restantes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="24sp"
+        android:text="Minas restantes:"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/dificultad"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="24sp"
+        android:text="Modo: "
+        android:textSize="24sp" />
+
+    <Button
+        android:id="@+id/botonReiniciar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nueva partida"
+        android:textSize="20sp" />
+
+    <TableLayout
+        android:id="@+id/tableForButtons"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:padding="0dip">
 
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="TextView" />
+    </TableLayout>
 
-        <TextView
-            android:id="@+id/textView4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="TextView" />
-
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Modo:" />
-
-        <Button
-            android:id="@+id/button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Nueva partida" />
-
-        <TableLayout
-            android:id="@+id/tableForButtons"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="0dip">
-
-        </TableLayout>
-    </LinearLayout>
-
-</RelativeLayout>
+</LinearLayout>

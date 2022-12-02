@@ -1,5 +1,6 @@
 package com.example.minas;
 
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -15,12 +16,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Random;
@@ -28,11 +27,9 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity {
 
     private static final int DIMENSION_FACIL = 8;
-    private static final int MINAS_FACIL = 10;
     private static final int DIMENSION_AMATEUR = 12;
-    private static final int MINAS_AMATEUR = 30;
     private static final int DIMENSION_PRO = 16;
-    private static final int MINAS_PRO = 60;
+    private static int minasTotales;
     private Resources resource;
     private Bitmap mina, vacio;
     private int contMinas;
@@ -41,63 +38,107 @@ public class MainActivity extends AppCompatActivity {
     // El array bidimensional de int y el de Button están relacionados
     // íntimamente. El número de minas alrededor de cada Button se
     // incluirá como valor en la casilla correspondiente de la plantilla,
-    // a través del método comprobar().
+    // a través del método generarNumeros().
     private int[][] plantilla;
     private Button buttons[][];
+
+    private TextView totales;
+    private TextView restantes;
+    private TextView dificultad;
+    private Button reiniciar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
         resource = getResources();
         mina = BitmapFactory.decodeResource(resource, R.drawable.tile05);
         vacio = BitmapFactory.decodeResource(resource, R.drawable.tile15);
+        totales = findViewById(R.id.totales);
+        restantes = findViewById(R.id.restantes);
+        dificultad = findViewById(R.id.dificultad);
 
-        setContentView(R.layout.activity_main);
+        reiniciar = findViewById(R.id.botonReiniciar);
+        reiniciar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                inicializar(DIMENSION_FACIL);
+            }
+        });
+
         rnd = new Random();
         Resources res = getResources();
-        inicializar(DIMENSION_PRO);
-        for(int i = 0; i < DIMENSION_PRO; i++){
-            for(int j = 0; j < DIMENSION_PRO; j++) {
-                comprobar(i,j,DIMENSION_PRO);
-            }
-        }
+        inicializar(DIMENSION_FACIL);
     }
 
     // Hace más comodo reiniciar el juego y añadir el método a los diálogos.
     public void inicializar(int dimension) {
+        Bitmap original = BitmapFactory.decodeResource(getResources(), R.drawable.tile00);
+        Resources resource = getResources();
+
         switch (dimension) {
             // POR DEFECTO DIMENSION_FACIL
             case DIMENSION_AMATEUR:
+                minasTotales = 30;
                 buttons = new Button[DIMENSION_AMATEUR][DIMENSION_AMATEUR];
                 plantilla = new int[DIMENSION_AMATEUR][DIMENSION_AMATEUR];
+                totales.setText("Minas totales: " + minasTotales);
+                restantes.setText("Minas restantes: " + minasTotales);
+                dificultad.setText("Modo: Amateur");
+
                 crearBotonesDinamico(DIMENSION_AMATEUR);
-                crearTableroConMinas(DIMENSION_AMATEUR, MINAS_AMATEUR);
+                crearTableroConMinas(DIMENSION_AMATEUR, minasTotales);
                 // Crea la plantilla (int[][]) para pruebas
                 for(int i = 0; i < DIMENSION_AMATEUR; i++){
                     for(int j = 0; j < DIMENSION_AMATEUR; j++) {
-                        comprobar(i,j,DIMENSION_AMATEUR);
+                        generarNumeros(i,j,DIMENSION_AMATEUR);
+                    }
+                }
+                for(int i = 0; i < DIMENSION_AMATEUR; i++) {
+                    for(int j = 0; j < DIMENSION_AMATEUR; j++) {
+                        buttons[i][j].setBackground(new BitmapDrawable(resource, original));
                     }
                 }
                 break;
             case DIMENSION_PRO:
+                minasTotales = 60;
                 buttons = new Button[DIMENSION_PRO][DIMENSION_PRO];
                 plantilla = new int[DIMENSION_PRO][DIMENSION_PRO];
+                totales.setText("Minas totales: " + minasTotales);
+                restantes.setText("Minas restantes: " + minasTotales);
+                dificultad.setText("Modo: Pro");
+
                 crearBotonesDinamico(DIMENSION_PRO);
-                crearTableroConMinas(DIMENSION_PRO, MINAS_PRO);
+                crearTableroConMinas(DIMENSION_PRO, minasTotales);
                 for(int i = 0; i < DIMENSION_PRO; i++){
                     for(int j = 0; j < DIMENSION_PRO; j++) {
-                        comprobar(i,j,DIMENSION_PRO);
+                        generarNumeros(i,j,DIMENSION_PRO);
+                    }
+                }
+                for(int i = 0; i < DIMENSION_PRO; i++) {
+                    for(int j = 0; j < DIMENSION_PRO; j++) {
+                        buttons[i][j].setBackground(new BitmapDrawable(resource, original));
                     }
                 }
                 break;
             default:
+                minasTotales = 10;
                 buttons = new Button[DIMENSION_FACIL][DIMENSION_FACIL];
                 plantilla = new int[DIMENSION_FACIL][DIMENSION_FACIL];
+                totales.setText("Minas totales: " + minasTotales);
+                restantes.setText("Minas restantes: " + minasTotales);
+                dificultad.setText("Modo: Fácil");
+
                 crearBotonesDinamico(DIMENSION_FACIL);
-                crearTableroConMinas(DIMENSION_FACIL, MINAS_FACIL);
+                crearTableroConMinas(DIMENSION_FACIL, minasTotales);
                 for(int i = 0; i < DIMENSION_FACIL; i++){
                     for(int j = 0; j < DIMENSION_FACIL; j++) {
-                        comprobar(i,j,DIMENSION_FACIL);
+                        generarNumeros(i,j,DIMENSION_FACIL);
+                    }
+                }
+                for(int i = 0; i < DIMENSION_FACIL; i++) {
+                    for(int j = 0; j < DIMENSION_FACIL; j++) {
+                        buttons[i][j].setBackground(new BitmapDrawable(resource, original));
                     }
                 }
                 break;
@@ -138,17 +179,19 @@ public class MainActivity extends AppCompatActivity {
 
                 // Make text not clip on small buttons
                 button.setPadding(0, 0, 0, 0);
-                button.setText("0");
-
-                Bitmap original = BitmapFactory.decodeResource(getResources(), R.drawable.tile00);
-                Resources resource = getResources();
-                button.setBackground(new BitmapDrawable(resource, original));
-
 
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        gridButtonClicked(FINAL_COL, FINAL_ROW, dimension);
+                        logicaBoton(FINAL_COL, FINAL_ROW, dimension);
+                    }
+                });
+
+                button.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        logicaBotonLargo(FINAL_COL, FINAL_ROW, dimension);
+                        return true;
                     }
                 });
 
@@ -158,24 +201,105 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-/*    private void crearTableroConMinas() {
-        // HashMap para que no se repitan los valores y no haya dos minas
-        // superpuestas
-        HashMap<Integer, Integer> hashMap = new HashMap<Integer, Integer>();
-        rnd = new Random();
-        while(hashMap.size() < 10) {
-            hashMap.put(rnd.nextInt(NUM_COLS), rnd.nextInt(NUM_COLS));
-        }
-        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile03);
-        Resources resource = getResources();
+    private void logicaBoton(int col, int row, int dimension) {
+        Button button = buttons[row][col];
+        if(plantilla[row][col] == -1) {
+            Bitmap bitMina = BitmapFactory.decodeResource(getResources(), R.drawable.tile04);
+            buttons[row][col].setBackground(new BitmapDrawable(resource, bitMina));
+            AlertDialog.Builder gameOver = new AlertDialog.Builder(this);
 
-        // Colocamos las minas usando los valores no repetidos
-        for (Map.Entry<Integer, Integer> set : hashMap.entrySet()) {
-            buttons[set.getKey()][set.getValue()].setText("-1");
-            buttons[set.getKey()][set.getValue()].setBackground(new BitmapDrawable(resource, originalBitmap));
+            gameOver.setTitle("HAS PERDIDO");
+            gameOver.setMessage("Parece ser que has pisado una mina :(");
+            gameOver.setPositiveButton("Jugar de nuevo", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    Toast.makeText(MainActivity.this, "¡No te rindas!", Toast.LENGTH_LONG).show();
+                    inicializar(DIMENSION_FACIL);
+                }
+            });
+            gameOver.create();
+            gameOver.show();
+        } else if(plantilla[row][col] > 0) {
+            switch (plantilla[row][col]) {
+                case 1:
+                    Bitmap bit1 = BitmapFactory.decodeResource(getResources(), R.drawable.tile14);
+                    buttons[row][col].setBackground(new BitmapDrawable(resource, bit1));
+                    break;
+                case 2:
+                    Bitmap bit2 = BitmapFactory.decodeResource(getResources(), R.drawable.tile13);
+                    buttons[row][col].setBackground(new BitmapDrawable(resource, bit2));
+                    break;
+                case 3:
+                    Bitmap bit3 = BitmapFactory.decodeResource(getResources(), R.drawable.tile12);
+                    buttons[row][col].setBackground(new BitmapDrawable(resource, bit3));
+                    break;
+                case 4:
+                    Bitmap bit4 = BitmapFactory.decodeResource(getResources(), R.drawable.tile11);
+                    buttons[row][col].setBackground(new BitmapDrawable(resource, bit4));
+                    break;
+                case 5:
+                    Bitmap bit5 = BitmapFactory.decodeResource(getResources(), R.drawable.tile10);
+                    buttons[row][col].setBackground(new BitmapDrawable(resource, bit5));
+                    break;
+                case 6:
+                    Bitmap bit6 = BitmapFactory.decodeResource(getResources(), R.drawable.tile09);
+                    buttons[row][col].setBackground(new BitmapDrawable(resource, bit6));
+                    break;
+                case 7:
+                    Bitmap bit7 = BitmapFactory.decodeResource(getResources(), R.drawable.tile08);
+                    buttons[row][col].setBackground(new BitmapDrawable(resource, bit7));
+                    break;
+                case 8:
+                    Bitmap bit8 = BitmapFactory.decodeResource(getResources(), R.drawable.tile07);
+                    buttons[row][col].setBackground(new BitmapDrawable(resource, bit8));
+                    break;
+            }
+        } else {
+            Bitmap bit9 = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
+            buttons[row][col].setBackground(new BitmapDrawable(resource, bit9));
+            generarNumeros(row,col,dimension);
         }
     }
-*/
+
+    public void logicaBotonLargo(int col, int row, int dimension){
+        if(plantilla[row][col] != -1) {
+            // Si no se pulsa jugar de nuevo sino otra zona de la pantalla, se permite volver al juego.
+            // Sé que esto no es lo más indicado, pero sirve para comprobar que el funcionamiento ha sido correcto.
+            // Si quisiéramos que el juego se reiniciara sin dar esta opción, inicializaríamos justo aquí:
+            // inicializar(DIMENSION_FACIL);
+
+            AlertDialog.Builder gameOver = new AlertDialog.Builder(this);
+            gameOver.setTitle("HAS PERDIDO");
+            gameOver.setMessage("No, eso no era una mina :(");
+            gameOver.setPositiveButton("Jugar de nuevo", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    Toast.makeText(MainActivity.this, "¡No te rindas!", Toast.LENGTH_LONG).show();
+                    inicializar(DIMENSION_FACIL);
+                }
+            });
+
+            gameOver.create();
+            gameOver.show();
+        } else {
+            restantes.setText("Minas restantes: " + --minasTotales);
+            Bitmap bitFlag = BitmapFactory.decodeResource(getResources(), R.drawable.tile01);
+            buttons[row][col].setBackground(new BitmapDrawable(resource, bitFlag));
+
+            // Esto podría mejorar muchísimo si tuviera algo más de tiempo para implementarlo
+            if(restantes.getText().equals("Minas restantes: 0")) {
+                AlertDialog.Builder victoria = new AlertDialog.Builder(this);
+                victoria.setTitle("HAS GANADO");
+                victoria.setMessage("Has marcado todas las minas :)\n¡Bien hecho!");
+                victoria.setPositiveButton("¿Otra?", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        inicializar(DIMENSION_FACIL);
+                    }
+                });
+
+                victoria.create();
+                victoria.show();
+            }
+        }
+    }
 
     /**
      * Asigna las minas necesarias para cada dificultad de juego, cambiando su texto a -1 (String).
@@ -186,259 +310,171 @@ public class MainActivity extends AppCompatActivity {
     private void crearTableroConMinas(int dimension, int numMinasDificultad) {
         int numMinas = 0;
         do {
-            for (int i = 0; i < dimension; i++) {
-                for (int j = 0; j < dimension; j++) {
-                    int fila = rnd.nextInt(dimension);
-                    int columna = rnd.nextInt(dimension);
-                    // Nos aseguramos de que no se superpongan minas y de que haya
-                    // un número adecuado al nivel
-                    if (!buttons[fila][columna].getText().equals("-1") && numMinas < numMinasDificultad) {
-                        numMinas++;
-                        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile03);
-                        Resources resource = getResources();
-                        buttons[fila][columna].setText("-1");
-                        plantilla[fila][columna] = -1;
-                        buttons[fila][columna].setBackground(new BitmapDrawable(resource, originalBitmap));
-                    }
-                }
+            // Generamos una posición (x,y) aleatoria donde colocar la mina
+            int fila = rnd.nextInt(dimension);
+            int columna = rnd.nextInt(dimension);
+            // Nos aseguramos de que no se superpongan minas y de que haya
+            // un número adecuado al nivel
+            if (!(plantilla[fila][columna] == -1) && numMinas != numMinasDificultad) {
+                numMinas++;
+                plantilla[fila][columna] = -1;
             }
-        } while (numMinas < numMinasDificultad);
+        } while (numMinas != numMinasDificultad);
     }
 
-    /**
-     * Para hacer pruebas sobre la lógica, no se implementa
-     *
-     * @param dimension private void calcularNumeros(int dimension) {
-     *                  for(int i = 0; i < dimension; i++) {
-     *                  for(int j = 0; j < dimension; j++) {
-     *                  comprobar(i, j, dimension);
-     *                  }
-     *                  }
-     *                  }
-     */
+    // MÉTODOS QUE COMPRUEBAN LOS 8 CASOS POSIBLES DE CASILLA CONTIGUA ---------------------------------
     public void comprobarEsqIzqSup(int i, int j, int dimension) {
- /*       if (buttons[i - 1][j - 1].getText().equals("-1")) {
-            contMinas++;
-        } else if (buttons[i - 1][j - 1].getText().equals("0")) {
-            buttons[i - 1][j - 1].setBackground(new BitmapDrawable(resource, vacio));
-        }
-  */
         if (plantilla[i - 1][j - 1] == -1) {
             contMinas++;
         }
     }
-
     public void comprobarEsqDerSup(int i, int j, int dimension) {
-        /*if (buttons[i - 1][j + 1].getText().equals("-1")) {
-            contMinas++;
-        } else if (buttons[i - 1][j + 1].getText().equals("0")) {
-            buttons[i - 1][j + 1].setBackground(new BitmapDrawable(resource, vacio));
-        }*/
-
         if (plantilla[i - 1][j + 1] == -1) {
             contMinas++;
         }
     }
-
     public void comprobarEsqIzqInf(int i, int j, int dimension) {
-        /*if (buttons[i + 1][j - 1].getText().equals("-1")) {
-            contMinas++;
-        } else if (buttons[i + 1][j - 1].getText().equals("0")) {
-            buttons[i + 1][j - 1].setBackground(new BitmapDrawable(resource, vacio));
-        }*/
         if (plantilla[i + 1][j - 1] == -1) {
             contMinas++;
         }
     }
-
     public void comprobarEsqDerInf(int i, int j, int dimension) {
-        /*if (buttons[i + 1][j + 1].getText().equals("-1")) {
-            contMinas++;
-        } else if (buttons[i + 1][j + 1].getText().equals("0")) {
-            buttons[i + 1][j + 1].setBackground(new BitmapDrawable(resource, vacio));
-        }*/
         if (plantilla[i + 1][j + 1] == -1) {
             contMinas++;
         }
     }
-
     public void comprobarSup(int i, int j, int dimension) {
-       /* if (buttons[i - 1][j].getText().equals("-1")) {
-            contMinas++;
-        } else if (buttons[i - 1][j].getText().equals("0")) {
-            buttons[i - 1][j].setBackground(new BitmapDrawable(resource, vacio));
-        }*/
         if (plantilla[i - 1][j] == -1) {
             contMinas++;
         }
     }
-
     public void comprobarInf(int i, int j, int dimension) {
-        /*if (buttons[i + 1][j].getText().equals("-1")) {
-            contMinas++;
-        } else if (buttons[i + 1][j].getText().equals("0")) {
-            buttons[i + 1][j].setBackground(new BitmapDrawable(resource, vacio));
-        }*/
         if (plantilla[i + 1][j] == -1) {
             contMinas++;
         }
     }
-
     public void comprobarIzq(int i, int j, int dimension) {
-        /*if (buttons[i][j - 1].getText().equals("-1")) {
-            contMinas++;
-        } else if (buttons[i][j - 1].getText().equals("0")) {
-            buttons[i][j - 1].setBackground(new BitmapDrawable(resource, vacio));
-        }*/
         if (plantilla[i][j - 1] == -1) {
             contMinas++;
         }
     }
-
     public void comprobarDer(int i, int j, int dimension) {
-        /*if (buttons[i][j + 1].getText().equals("-1")) {
-            contMinas++;
-        } else if (buttons[i][j + 1].getText().equals("0")) {
-            buttons[i][j + 1].setBackground(new BitmapDrawable(resource, vacio));
-        }*/
         if (plantilla[i][j + 1] == -1) {
             contMinas++;
         }
-
     }
 
     /**
-     * AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-     * ME VOY A PEGAR UN TIRO EN LAS PELOTAS Y NI SIQUIERA TENGO jefe
+     * Añade a la plantilla los datos de todos los números del tablero, siendo 0
+     * para las casillas vacías y -1 para las minas.
      * @param i
      * @param j
      * @param dimension
      */
-    private void comprobar(int i, int j, int dimension) {
+    private void generarNumeros(int i, int j, int dimension) {
         contMinas = 0;
         if ((i == 0) && (j == 0)) { //----------------------------------- Estamos en la esquina superior izquierda
-                comprobarDer(i, j, dimension);
-                comprobarInf(i, j, dimension);
-                comprobarEsqDerInf(i, j, dimension);
+            comprobarDer(i, j, dimension);
+            comprobarInf(i, j, dimension);
+            comprobarEsqDerInf(i, j, dimension);
         } else if ((i == dimension - 1) && (j == 0)) { // ------------------------------Esquina inferior izquierda
             comprobarSup(i, j, dimension);
             comprobarDer(i, j, dimension);
             comprobarEsqDerSup(i, j, dimension);
         } else if ((i == 0) && (j == dimension - 1)) { // --------------------------------Esquina superior derecha
-                comprobarIzq(i, j, dimension);
-                comprobarInf(i, j, dimension);
-                comprobarEsqIzqInf(i, j, dimension);
+            comprobarIzq(i, j, dimension);
+            comprobarInf(i, j, dimension);
+            comprobarEsqIzqInf(i, j, dimension);
         } else if ((i == dimension - 1) && (j == dimension - 1)) {//--------------------- Esquina inferior derecha
-                comprobarIzq(i, j, dimension);
-                comprobarSup(i, j, dimension);
-                comprobarEsqIzqSup(i, j, dimension);
-        }else if((j == 0) && (i != 0 && (i < dimension - 1))) { //------------------ Estamos en la primera columna
-                comprobarSup(i,j, dimension);
-                comprobarInf(i,j, dimension);
-                comprobarDer(i,j, dimension);
-                comprobarEsqDerSup(i,j, dimension);
-                comprobarEsqDerInf(i,j, dimension);
-        } else if((j == dimension - 1) && (i != 0) && (i != dimension - 1)) { // -----Estamos en la última columna
-                comprobarSup(i,j, dimension);
-                comprobarInf(i,j, dimension);
-                comprobarIzq(i,j, dimension);
-                comprobarEsqIzqSup(i,j, dimension);
-                comprobarEsqIzqInf(i,j, dimension);
-        } else if((i == 0) && (j != 0) && (j != dimension - 1)) { //------------------- Estamos en la primera fila
-                comprobarIzq(i,j, dimension);
-                comprobarDer(i,j, dimension);
-                comprobarInf(i,j, dimension);
-                comprobarEsqIzqInf(i,j, dimension);
-                comprobarEsqDerInf(i,j, dimension);
-        } else if((i == dimension - 1) && (j != 0) && (j != dimension - 1)) { //-------- Estamos en la última fila
-                comprobarSup(i,j, dimension);
-                comprobarIzq(i,j, dimension);
-                comprobarDer(i,j, dimension);
-                comprobarEsqDerSup(i,j, dimension);
-                comprobarEsqIzqSup(i,j, dimension);
+            comprobarIzq(i, j, dimension);
+            comprobarSup(i, j, dimension);
+            comprobarEsqIzqSup(i, j, dimension);
+        } else if ((j == 0) && (i != 0 && (i < dimension - 1))) { //------------------ Estamos en la primera columna
+            comprobarSup(i, j, dimension);
+            comprobarInf(i, j, dimension);
+            comprobarDer(i, j, dimension);
+            comprobarEsqDerSup(i, j, dimension);
+            comprobarEsqDerInf(i, j, dimension);
+        } else if ((j == dimension - 1) && (i != 0) && (i != dimension - 1)) { // -----Estamos en la última columna
+            comprobarSup(i, j, dimension);
+            comprobarInf(i, j, dimension);
+            comprobarIzq(i, j, dimension);
+            comprobarEsqIzqSup(i, j, dimension);
+            comprobarEsqIzqInf(i, j, dimension);
+        } else if ((i == 0) && (j != 0) && (j != dimension - 1)) { //------------------- Estamos en la primera fila
+            comprobarIzq(i, j, dimension);
+            comprobarDer(i, j, dimension);
+            comprobarInf(i, j, dimension);
+            comprobarEsqIzqInf(i, j, dimension);
+            comprobarEsqDerInf(i, j, dimension);
+        } else if ((i == dimension - 1) && (j != 0) && (j != dimension - 1)) { //-------- Estamos en la última fila
+            comprobarSup(i, j, dimension);
+            comprobarIzq(i, j, dimension);
+            comprobarDer(i, j, dimension);
+            comprobarEsqDerSup(i, j, dimension);
+            comprobarEsqIzqSup(i, j, dimension);
         } else { // -----------------------------------------------------------------Cualquier casilla del interior
-                comprobarEsqDerSup(i,j, dimension);
-                comprobarEsqIzqInf(i,j, dimension);
-                comprobarEsqIzqSup(i,j,dimension);
-                comprobarEsqDerInf(i,j, dimension);
-                comprobarSup(i,j, dimension);
-                comprobarInf(i,j, dimension);
-                comprobarIzq(i,j, dimension);
-                comprobarDer(i,j, dimension);
-            }
+            comprobarEsqDerSup(i, j, dimension);
+            comprobarEsqIzqInf(i, j, dimension);
+            comprobarEsqIzqSup(i, j, dimension);
+            comprobarEsqDerInf(i, j, dimension);
+            comprobarSup(i, j, dimension);
+            comprobarInf(i, j, dimension);
+            comprobarIzq(i, j, dimension);
+            comprobarDer(i, j, dimension);
+        }
 
         // SWITCH FINAL -----------------------------------------------------------------------------------
-        if (!buttons[i][j].getText().equals("-1")) {
+        if (!(plantilla[i][j] == -1)) {
             switch (contMinas) {
                 case 0:
                     Bitmap bit0 = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
                     buttons[i][j].setBackground(new BitmapDrawable(resource, bit0));
-                    buttons[i][j].setText("");
                     plantilla[i][j] = 0;
                     break;
                 case 1:
                     Bitmap bit1 = BitmapFactory.decodeResource(getResources(), R.drawable.tile14);
                     buttons[i][j].setBackground(new BitmapDrawable(resource, bit1));
-                    buttons[i][j].setText("");
                     plantilla[i][j] = 1;
                     break;
                 case 2:
                     Bitmap bit2 = BitmapFactory.decodeResource(getResources(), R.drawable.tile13);
                     buttons[i][j].setBackground(new BitmapDrawable(resource, bit2));
-                    buttons[i][j].setText("");
                     plantilla[i][j] = 2;
-
                     break;
                 case 3:
                     Bitmap bit3 = BitmapFactory.decodeResource(getResources(), R.drawable.tile12);
                     buttons[i][j].setBackground(new BitmapDrawable(resource, bit3));
-                    buttons[i][j].setText("");
-                    plantilla[i][j] =3;
-
+                    plantilla[i][j] = 3;
                     break;
                 case 4:
                     Bitmap bit4 = BitmapFactory.decodeResource(getResources(), R.drawable.tile11);
                     buttons[i][j].setBackground(new BitmapDrawable(resource, bit4));
-                    buttons[i][j].setText("");
                     plantilla[i][j] = 4;
-
                     break;
                 case 5:
                     Bitmap bit5 = BitmapFactory.decodeResource(getResources(), R.drawable.tile10);
                     buttons[i][j].setBackground(new BitmapDrawable(resource, bit5));
-                    buttons[i][j].setText("");
                     plantilla[i][j] = 5;
-
                     break;
                 case 6:
                     Bitmap bit6 = BitmapFactory.decodeResource(getResources(), R.drawable.tile09);
                     buttons[i][j].setBackground(new BitmapDrawable(resource, bit6));
-                    buttons[i][j].setText("");
-                    plantilla[i][j] =6;
-
+                    plantilla[i][j] = 6;
                     break;
                 case 7:
                     Bitmap bit7 = BitmapFactory.decodeResource(getResources(), R.drawable.tile08);
                     buttons[i][j].setBackground(new BitmapDrawable(resource, bit7));
-                    buttons[i][j].setText("");
                     plantilla[i][j] = 7;
-
                     break;
                 case 8:
                     Bitmap bit8 = BitmapFactory.decodeResource(getResources(), R.drawable.tile07);
                     buttons[i][j].setBackground(new BitmapDrawable(resource, bit8));
-                    buttons[i][j].setText("");
                     plantilla[i][j] = 8;
-
                     break;
             }
         }
     }
-
-    private void gridButtonClicked(int col, int row, int dimension) {
-        comprobar(row, col, dimension);
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -466,12 +502,18 @@ public class MainActivity extends AppCompatActivity {
                 instrucciones.setTitle("Instrucciones de juego");
                 instrucciones.setMessage("· Se presenta un campo de minas, de dimensiones: \n\t8x8 - fácil\n\t12x12 - amateur\n\t16x16 - pro" +
                         "\n\n· Cada casilla que no contenga mina mostrará el número de minas en sus casillas contiguas." +
-                        "\n\n· El objetivo es evitar todas las minas, pulsando solo las casillas que no contengan una." +
-                        "\n\n· El juego finaliza cuando todas las casillas sin mina han sido descubiertas, cuando se pulsa una mina o cuando " +
+                        "\n\n· El objetivo es evitar las minas MARCÁNDOLAS TODAS CON UN CLICK LARGO (bandera de aviso de mina). " +
+                        "Esta parte es necesaria tal y como está implementado el juego por el momento." +
+                        "\n\n· El juego finaliza cuando todas las casillas con mina han sido marcadas, cuando se pulsa una mina o cuando " +
                         "se añade un 'aviso de mina' donde no hay una mina.");
                 instrucciones.setPositiveButton("Entendido", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         Toast.makeText(MainActivity.this, "¡Diviértete!", Toast.LENGTH_LONG).show();
+                    }
+                });
+                instrucciones.setNeutralButton("Pista", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Toast.makeText(MainActivity.this, "Céntrate en los espacios vacíos, son tu mejor amigo", Toast.LENGTH_LONG).show();
                     }
                 });
                 AlertDialog alert = instrucciones.create();
