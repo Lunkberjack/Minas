@@ -23,7 +23,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int MINAS_AMATEUR = 30;
     private static final int DIMENSION_PRO = 16;
     private static final int MINAS_PRO = 60;
-    private Resources res;
+    private Resources resource;
+    private int contMinas;
+    private Bitmap mina, vacio;
 
     private static Random rnd;
 
@@ -32,11 +34,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        contMinas = 0;
+        resource = getResources();
+        mina = BitmapFactory.decodeResource(resource, R.drawable.tile05);
+        vacio = BitmapFactory.decodeResource(resource, R.drawable.tile15);
 
         setContentView(R.layout.activity_main);
         rnd = new Random();
         Resources res = getResources();
-        inicializar(DIMENSION_PRO);
+        inicializar(DIMENSION_FACIL);
     }
 
     // Hace más comodo reiniciar el juego y añadir el método a los diálogos.
@@ -47,19 +53,19 @@ public class MainActivity extends AppCompatActivity {
                 buttons = new Button[DIMENSION_AMATEUR][DIMENSION_AMATEUR];
                 crearBotonesDinamico(DIMENSION_AMATEUR);
                 crearTableroConMinas(DIMENSION_AMATEUR, MINAS_AMATEUR);
-                calcularNumeros(DIMENSION_AMATEUR);
+                //calcularNumeros(DIMENSION_AMATEUR);
                 break;
             case DIMENSION_PRO:
                 buttons = new Button[DIMENSION_PRO][DIMENSION_PRO];
                 crearBotonesDinamico(DIMENSION_PRO);
                 crearTableroConMinas(DIMENSION_PRO, MINAS_PRO);
-                calcularNumeros(DIMENSION_PRO);
+                //calcularNumeros(DIMENSION_PRO);
                 break;
             default:
                 buttons = new Button[DIMENSION_FACIL][DIMENSION_FACIL];
                 crearBotonesDinamico(DIMENSION_FACIL);
                 crearTableroConMinas(DIMENSION_FACIL, MINAS_FACIL);
-                calcularNumeros(DIMENSION_FACIL);
+               // calcularNumeros(DIMENSION_FACIL);
                 break;
         }
     }
@@ -106,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        gridButtonClicked(FINAL_COL, FINAL_ROW);
+                        gridButtonClicked(FINAL_COL, FINAL_ROW, DIMENSION_FACIL);
                     }
                 });
 
@@ -161,12 +167,88 @@ public class MainActivity extends AppCompatActivity {
         } while(numMinas < numMinasDificultad);
     }
 
+    /**
+     * Para hacer pruebas sobre la lógica, no se implementa
+     * @param dimension
+
     private void calcularNumeros(int dimension) {
         for(int i = 0; i < dimension; i++) {
             for(int j = 0; j < dimension; j++) {
                 comprobar(i, j, dimension);
             }
         }
+    }
+*/
+    public void comprobarEsqIzqSup(int i, int j, int dimension) {
+        if(buttons[i-1][j-1].getText().equals("-1")) {
+            buttons[i-1][j-1].setBackground(new BitmapDrawable(resource, mina));
+        } else if(buttons[i-1][j-1].getText().equals("0")) {
+            buttons[i-1][j-1].setBackground(new BitmapDrawable(resource, vacio));
+            comprobar(i-1,j-1,dimension);
+        }
+    }
+    public void comprobarEsqDerSup(int i, int j, int dimension) {
+        if(buttons[i-1][j+1].getText().equals("-1")) {
+            contMinas++;
+        } else if(buttons[i-1][j+1].getText().equals("0")) {
+            buttons[i-1][j+1].setBackground(new BitmapDrawable(resource, vacio));
+            comprobar(i-1,j+1,dimension);
+        }
+    }
+
+    public void comprobarEsqIzqInf(int i, int j, int dimension) {
+        if(buttons[i+1][j-1].getText().equals("-1")) {
+            contMinas++;
+        } else if(buttons[i+1][j-1].getText().equals("0")) {
+            buttons[i+1][j-1].setBackground(new BitmapDrawable(resource, vacio));
+            comprobar(i+1,j-1,dimension);
+        }
+    }
+
+    public void comprobarEsqDerInf(int i, int j, int dimension) {
+        if(buttons[i+1][j+1].getText().equals("-1")) {
+            contMinas++;
+        } else if(buttons[i+1][j+1].getText().equals("0")) {
+            buttons[i + 1][j + 1].setBackground(new BitmapDrawable(resource, vacio));
+            comprobar(i + 1, j + 1, dimension);
+        }
+    }
+
+    public void comprobarSup(int i, int j, int dimension) {
+        if(buttons[i-1][j].getText().equals("-1")) {
+            contMinas++;
+        } else if(buttons[i-1][j].getText().equals("0")) {
+            buttons[i-1][j].setBackground(new BitmapDrawable(resource, vacio));
+            comprobar(i-1,j,dimension);
+        }
+    }
+
+    public void comprobarInf(int i, int j, int dimension) {
+        if(buttons[i+1][j].getText().equals("-1")) {
+            contMinas++;
+        } else if(buttons[i+1][j].getText().equals("0")) {
+            buttons[i+1][j].setBackground(new BitmapDrawable(resource, vacio));
+            comprobar(i+1,j,dimension);
+        }
+    }
+
+    public void comprobarIzq(int i, int j, int dimension) {
+        if(buttons[i][j-1].getText().equals("-1")) {
+            contMinas++;
+        } else if(buttons[i][j-1].getText().equals("0")) {
+            buttons[i][j-1].setBackground(new BitmapDrawable(resource, vacio));
+            comprobar(i,j-1,dimension);
+        }
+    }
+
+    public void comprobarDer(int i, int j, int dimension) {
+        if(buttons[i][j+1].getText().equals("-1")) {
+            contMinas++;
+        } else if(buttons[i][j+1].getText().equals("0")) {
+            buttons[i][j+1].setBackground(new BitmapDrawable(resource, vacio));
+            comprobar(i,j+1,dimension);
+        }
+
     }
 
     /**
@@ -176,192 +258,172 @@ public class MainActivity extends AppCompatActivity {
      * @param dimension
      */
     private void comprobar(int i, int j, int dimension) {
-        int contMinas = 0;
-
         if(i == 0 && j == 0) { // Estamos en la esquina superior izquierda
             if(buttons[i][j].getText().equals("-1")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile05);
-                Resources resource = getResources();
-                buttons[i][j].setBackground(new BitmapDrawable(resource, originalBitmap));
+                buttons[i][j].setBackground(new BitmapDrawable(resource, mina));
             } else if(buttons[i][j].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i][j].setBackground(new BitmapDrawable(resource, originalBitmap));
+                buttons[i][j].setBackground(new BitmapDrawable(resource, vacio));
             }
-
-            if(buttons[i+1][j].getText().equals("-1")) {
-                contMinas++;
-            } else if(buttons[i+1][j].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i+1][j].setBackground(new BitmapDrawable(resource, originalBitmap));
-            }
-
-            if(buttons[i+1][j+1].getText().equals("-1")) {
-                contMinas++;
-            } else if(buttons[i+1][j+1].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i+1][j+1].setBackground(new BitmapDrawable(resource, originalBitmap));
-            }
-
-            if(buttons[i][j+1].getText().equals("-1")) {
-                contMinas++;
-            } else if(buttons[i][j+1].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i][j+1].setBackground(new BitmapDrawable(resource, originalBitmap));
-            }
-            // -------------------------------------------------------------------------------------------
-        } else if((i == dimension - 1) && (j == 0)) { // Esquina inferior izquierda
+            comprobarDer(i,j,dimension);
+            comprobarInf(i,j,dimension);
+            comprobarEsqDerInf(i,j,dimension);
+        // ------------------------------------------------------------------------------------------------
+        }
+        else if((i == dimension - 1) && (j == 0)) { // Esquina inferior izquierda
             if(buttons[i][j].getText().equals("-1")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile05);
-                Resources resource = getResources();
-                buttons[i][j].setBackground(new BitmapDrawable(resource, originalBitmap));
+                buttons[i][j].setBackground(new BitmapDrawable(resource, mina));
             } else if(buttons[i][j].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i][j].setBackground(new BitmapDrawable(resource, originalBitmap));
+                buttons[i][j].setBackground(new BitmapDrawable(resource, vacio));
             }
+            comprobarSup(i,j,dimension);
+            comprobarDer(i,j,dimension);
+            comprobarEsqDerSup(i,j,dimension);
 
-            if(buttons[i-1][j].getText().equals("-1")) {
-                contMinas++;
-            } else if(buttons[i-1][j].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i-1][j].setBackground(new BitmapDrawable(resource, originalBitmap));
-            }
-
-            if(buttons[i-1][j+1].getText().equals("-1")) {
-                contMinas++;
-            } else if(buttons[i-1][j+1].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i-1][j+1].setBackground(new BitmapDrawable(resource, originalBitmap));
-            }
-
-            if(buttons[i][j+1].getText().equals("-1")) {
-                contMinas++;
-            } else if(buttons[i][j+1].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i][j+1].setBackground(new BitmapDrawable(resource, originalBitmap));
-            }
         // ------------------------------------------------------------------------------------------------
         } else if((i == 0) && (j == dimension - 1)) { // Esquina superior derecha
             if(buttons[i][j].getText().equals("-1")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile05);
-                Resources resource = getResources();
-                buttons[i][j].setBackground(new BitmapDrawable(resource, originalBitmap));
             } else if(buttons[i][j].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i][j].setBackground(new BitmapDrawable(resource, originalBitmap));
+                buttons[i][j].setBackground(new BitmapDrawable(resource, vacio));
             }
-
-            if(buttons[i][j-1].getText().equals("-1")) {
-                contMinas++;
-            } else if(buttons[i][j-1].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i][j-1].setBackground(new BitmapDrawable(resource, originalBitmap));
-            }
-
-            if(buttons[i+1][j-1].getText().equals("-1")) {
-                contMinas++;
-            } else if(buttons[i+1][j-1].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i+1][j-1].setBackground(new BitmapDrawable(resource, originalBitmap));
-            }
-
-            if(buttons[i+1][j].getText().equals("-1")) {
-                contMinas++;
-            } else if(buttons[i+1][j].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i+1][j].setBackground(new BitmapDrawable(resource, originalBitmap));
-            }
+            comprobarIzq(i,j,dimension);
+            comprobarInf(i,j,dimension);
+            comprobarEsqIzqInf(i,j,dimension);
         // -------------------------------------------------------------------------------------------------
         } else if((i == dimension - 1) && (j == dimension - 1)) { // Esquina inferior derecha
             if(buttons[i][j].getText().equals("-1")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile05);
-                Resources resource = getResources();
-                buttons[i][j].setBackground(new BitmapDrawable(resource, originalBitmap));
+                buttons[i][j].setBackground(new BitmapDrawable(resource, mina));
             } else if(buttons[i][j].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i][j].setBackground(new BitmapDrawable(resource, originalBitmap));
+                buttons[i][j].setBackground(new BitmapDrawable(resource, vacio));
             }
+            comprobarIzq(i,j,dimension);
+            comprobarSup(i,j,dimension);
+            comprobarEsqIzqSup(i,j,dimension);
 
-            if(buttons[i-1][j].getText().equals("-1")) {
-                contMinas++;
-            } else if(buttons[i-1][j].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i-1][j].setBackground(new BitmapDrawable(resource, originalBitmap));
-            }
+        // -------------------------------------------------------------------------------------------------
 
-            if(buttons[i-1][j-1].getText().equals("-1")) {
-                contMinas++;
-            } else if(buttons[i-1][j-1].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i-1][j-1].setBackground(new BitmapDrawable(resource, originalBitmap));
+        } /*
+        else if((j == 0) && (i != 0) && (i != dimension - 1)) { // Estamos en la primera columna
+            if(buttons[i][j].getText().equals("-1")) {
+                buttons[i][j].setBackground(new BitmapDrawable(resource, mina));
+            } else if(buttons[i][j].getText().equals("0")) {
+                buttons[i][j].setBackground(new BitmapDrawable(resource, vacio));
             }
-
-            if(buttons[i][j-1].getText().equals("-1")) {
-                contMinas++;
-            } else if(buttons[i][j-1].getText().equals("0")) {
-                Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tile15);
-                Resources resource = getResources();
-                buttons[i][j-1].setBackground(new BitmapDrawable(resource, originalBitmap));
+            comprobarSup(i,j,dimension);
+            comprobarInf(i,j,dimension);
+            comprobarDer(i,j,dimension);
+            comprobarEsqDerSup(i,j,dimension);
+            comprobarEsqDerInf(i,j,dimension);
+            // ---------------------------------------------------------------------------------------------
+        }
+        else if((j == dimension - 1) && (i != 0) && (i != dimension - 1)) { // Estamos en la última columna
+            if(buttons[i][j].getText().equals("-1")) {
+                buttons[i][j].setBackground(new BitmapDrawable(resource, mina));
+            } else if(buttons[i][j].getText().equals("0")) {
+                buttons[i][j].setBackground(new BitmapDrawable(resource, vacio));
             }
+            comprobarSup(i,j,dimension);
+            comprobarInf(i,j,dimension);
+            comprobarIzq(i,j,dimension);
+            comprobarEsqIzqSup(i,j,dimension);
+            comprobarEsqIzqInf(i,j,dimension);
         // ------------------------------------------------------------------------------------------------
-        } else if(j == 0) { // Estamos en la primera columna
-            //if(buttons[i][j])
+        } else if((i == 0) && (j != 0) && (j != dimension - 1)) { // Estamos en la primera fila
+            if(buttons[i][j].getText().equals("-1")) {
+                buttons[i][j].setBackground(new BitmapDrawable(resource, mina));
+            } else if(buttons[i][j].getText().equals("0")) {
+                buttons[i][j].setBackground(new BitmapDrawable(resource, vacio));
+            }
+            comprobarIzq(i,j,dimension);
+            comprobarDer(i,j,dimension);
+            comprobarInf(i,j,dimension);
+            comprobarEsqIzqInf(i,j,dimension);
+            comprobarEsqDerInf(i,j,dimension);
+        // -----------------------------------------------------------------------------------------------
+        } else if((i == dimension - 1) && (j != 0) && (j != dimension - 1)) { // Estamos en la última fila
+            if(buttons[i][j].getText().equals("-1")) {
+                buttons[i][j].setBackground(new BitmapDrawable(resource, mina));
+            } else if(buttons[i][j].getText().equals("0")) {
+                buttons[i][j].setBackground(new BitmapDrawable(resource, vacio));
+            }
+            comprobarSup(i,j,dimension);
+            comprobarIzq(i,j,dimension);
+            comprobarDer(i,j,dimension);
+            comprobarEsqDerSup(i,j,dimension);
+            comprobarEsqIzqSup(i,j,dimension);
+        // -----------------------------------------------------------------------------------------------
         }
+         else { // Cualquier casilla del interior
+            comprobarEsqIzqSup(i,j, dimension);
+            comprobarEsqDerSup(i,j, dimension);
+            comprobarEsqIzqInf(i,j, dimension);
+            comprobarEsqDerInf(i,j, dimension);
+            comprobarSup(i,j, dimension);
+            comprobarInf(i,j, dimension);
+            comprobarIzq(i,j, dimension);
+            comprobarDer(i,j, dimension);
+        }
+*/
         // SWITCH FINAL -----------------------------------------------------------------------------------
-        switch (contMinas) {
-            case 1:
-                Bitmap bit1 = BitmapFactory.decodeResource(getResources(), R.drawable.tile14);
-                buttons[i][j].setBackground(new BitmapDrawable(res, bit1));
-                break;
-            case 2:
-                Bitmap bit2 = BitmapFactory.decodeResource(getResources(), R.drawable.tile13);
-                buttons[i][j].setBackground(new BitmapDrawable(res, bit2));
-                break;
-            case 3:
-                Bitmap bit3 = BitmapFactory.decodeResource(getResources(), R.drawable.tile12);
-                buttons[i][j].setBackground(new BitmapDrawable(res, bit3));
-                break;
-            case 4:
-                Bitmap bit4 = BitmapFactory.decodeResource(getResources(), R.drawable.tile11);
-                buttons[i][j].setBackground(new BitmapDrawable(res, bit4));
-                break;
-            case 5:
-                Bitmap bit5 = BitmapFactory.decodeResource(getResources(), R.drawable.tile10);
-                buttons[i][j].setBackground(new BitmapDrawable(res, bit5));
-                break;
-            case 6:
-                Bitmap bit6 = BitmapFactory.decodeResource(getResources(), R.drawable.tile09);
-                buttons[i][j].setBackground(new BitmapDrawable(res, bit6));
-                break;
-            case 7:
-                Bitmap bit7 = BitmapFactory.decodeResource(getResources(), R.drawable.tile08);
-                buttons[i][j].setBackground(new BitmapDrawable(res, bit7));
-                break;
-            case 8:
-                Bitmap bit8 = BitmapFactory.decodeResource(getResources(), R.drawable.tile07);
-                buttons[i][j].setBackground(new BitmapDrawable(res, bit8));
-                break;
+        if(buttons[i][j].getText().equals("0")) {
+            switch (contMinas) {
+                case 1:
+                    Bitmap bit1 = BitmapFactory.decodeResource(getResources(), R.drawable.tile14);
+                    buttons[i][j].setBackground(new BitmapDrawable(resource, bit1));
+                    buttons[i][j].setText("1");
+                    contMinas = 0;
+                    break;
+                case 2:
+                    Bitmap bit2 = BitmapFactory.decodeResource(getResources(), R.drawable.tile13);
+                    buttons[i][j].setBackground(new BitmapDrawable(resource, bit2));
+                    buttons[i][j].setText("2");
+                    contMinas=0;
+                    break;
+                case 3:
+                    Bitmap bit3 = BitmapFactory.decodeResource(getResources(), R.drawable.tile12);
+                    buttons[i][j].setBackground(new BitmapDrawable(resource, bit3));
+                    buttons[i][j].setText("3");
+                    contMinas=0;
+                    break;
+                case 4:
+                    Bitmap bit4 = BitmapFactory.decodeResource(getResources(), R.drawable.tile11);
+                    buttons[i][j].setBackground(new BitmapDrawable(resource, bit4));
+                    buttons[i][j].setText("4");
+                    contMinas=0;
+                    break;
+                case 5:
+                    Bitmap bit5 = BitmapFactory.decodeResource(getResources(), R.drawable.tile10);
+                    buttons[i][j].setBackground(new BitmapDrawable(resource, bit5));
+                    buttons[i][j].setText("5");
+                    contMinas=0;
+                    break;
+                case 6:
+                    Bitmap bit6 = BitmapFactory.decodeResource(getResources(), R.drawable.tile09);
+                    buttons[i][j].setBackground(new BitmapDrawable(resource, bit6));
+                    buttons[i][j].setText("6");
+                    contMinas=0;
+                    break;
+                case 7:
+                    Bitmap bit7 = BitmapFactory.decodeResource(getResources(), R.drawable.tile08);
+                    buttons[i][j].setBackground(new BitmapDrawable(resource, bit7));
+                    buttons[i][j].setText("7");
+                    contMinas=0;
+                    break;
+                case 8:
+                    Bitmap bit8 = BitmapFactory.decodeResource(getResources(), R.drawable.tile07);
+                    buttons[i][j].setBackground(new BitmapDrawable(resource, bit8));
+                    buttons[i][j].setText("8");
+                    contMinas=0;
+                    break;
+            }
         }
+
     }
 
-    private void gridButtonClicked(int col, int row) {
+    private void gridButtonClicked(int col, int row, int dimension) {
         // Toast.makeText(this, "Button clicked: " + col + "," + row,
         //        Toast.LENGTH_SHORT).show();
         Button button = buttons[row][col];
+        comprobar(row, col, dimension);
     }
 
 
