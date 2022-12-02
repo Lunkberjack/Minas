@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private int[][] plantilla;
     private Button buttons[][];
 
+    // Strings de info en pantalla y botón de reinicio rápido.
     private TextView totales;
     private TextView restantes;
     private TextView dificultad;
@@ -71,8 +72,16 @@ public class MainActivity extends AppCompatActivity {
         inicializar(DIMENSION_FACIL);
     }
 
-    // Hace más comodo reiniciar el juego y añadir el método a los diálogos.
+    /**
+     * Crea el tablero, genera los números según las minas contiguas
+     * y añade valores a los Strings de info.
+     *
+     * También "oculta" las casillas
+     * asignándoles el típico tile del Buscaminas de WindowsXP.
+     * @param dimension
+     */
     public void inicializar(int dimension) {
+        // El tile de casilla sin descubrir (16x16px)
         Bitmap original = BitmapFactory.decodeResource(getResources(), R.drawable.tile00);
         Resources resource = getResources();
 
@@ -94,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
                         generarNumeros(i,j,DIMENSION_AMATEUR);
                     }
                 }
+                // Oculta casillas
                 for(int i = 0; i < DIMENSION_AMATEUR; i++) {
                     for(int j = 0; j < DIMENSION_AMATEUR; j++) {
                         buttons[i][j].setBackground(new BitmapDrawable(resource, original));
@@ -115,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
                         generarNumeros(i,j,DIMENSION_PRO);
                     }
                 }
+                // Oculta casillas
                 for(int i = 0; i < DIMENSION_PRO; i++) {
                     for(int j = 0; j < DIMENSION_PRO; j++) {
                         buttons[i][j].setBackground(new BitmapDrawable(resource, original));
@@ -136,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
                         generarNumeros(i,j,DIMENSION_FACIL);
                     }
                 }
+                // Oculta casillas
                 for(int i = 0; i < DIMENSION_FACIL; i++) {
                     for(int j = 0; j < DIMENSION_FACIL; j++) {
                         buttons[i][j].setBackground(new BitmapDrawable(resource, original));
@@ -147,7 +159,6 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Se encarga de crear un TableLayout y rellenarlo de los botones del tablero.
-     *
      * @param dimension
      */
     public void crearBotonesDinamico(int dimension) {
@@ -155,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
         table.removeAllViewsInLayout(); // Actualiza la tabla cada vez que se llama al método
         table.setPadding(0, 0, 0, 0);
 
-        // ESTO ES LO QUE HACE QUE SEA MÁS CUADRADO, PERO CAMBIAR PORQUE ES UNA TREMENDA CHAPUZA
+        // HACE QUE SEA MÁS CUADRADO, PERO CAMBIAR SI LA PANTALLA DEL MÓVIL ES DE POCA RESOLUCIÓN
         table.setPadding(0, 0, 0, 450);
 
         for (int row = 0; row < dimension; row++) {
@@ -177,7 +188,6 @@ public class MainActivity extends AppCompatActivity {
                         TableRow.LayoutParams.MATCH_PARENT,
                         1.0f));
 
-                // Make text not clip on small buttons
                 button.setPadding(0, 0, 0, 0);
 
                 button.setOnClickListener(new View.OnClickListener() {
@@ -201,6 +211,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Lógica de click corto sobre casilla.
+     *
+     * Asigna un tile diferente del tileset según se trate
+     * de una mina, un espacio vacío o un número.
+     *
+     * @param col
+     * @param row
+     * @param dimension
+     */
     private void logicaBoton(int col, int row, int dimension) {
         Button button = buttons[row][col];
         if(plantilla[row][col] == -1) {
@@ -260,6 +280,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Lógica de click largo sobre casilla.
+     *
+     * Coloca una bandera y notifica de que se ha encontrado una mina o finaliza el juego
+     * si se ha colocado en una casilla que no contiene mina.
+     *
+     * @param col
+     * @param row
+     * @param dimension
+     */
     public void logicaBotonLargo(int col, int row, int dimension){
         if(plantilla[row][col] != -1) {
             // Si no se pulsa jugar de nuevo sino otra zona de la pantalla, se permite volver al juego.
@@ -283,6 +313,7 @@ public class MainActivity extends AppCompatActivity {
             restantes.setText("Minas restantes: " + --minasTotales);
             Bitmap bitFlag = BitmapFactory.decodeResource(getResources(), R.drawable.tile01);
             buttons[row][col].setBackground(new BitmapDrawable(resource, bitFlag));
+            Toast.makeText(MainActivity.this, "¡Has encontrado una mina!", Toast.LENGTH_SHORT).show();
 
             // Esto podría mejorar muchísimo si tuviera algo más de tiempo para implementarlo
             if(restantes.getText().equals("Minas restantes: 0")) {
@@ -302,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Asigna las minas necesarias para cada dificultad de juego, cambiando su texto a -1 (String).
+     * Asigna las minas necesarias para cada dificultad de juego, cambiando el valor a -1.
      *
      * @param dimension
      * @param numMinasDificultad
@@ -367,6 +398,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Añade a la plantilla los datos de todos los números del tablero, siendo 0
      * para las casillas vacías y -1 para las minas.
+     *
      * @param i
      * @param j
      * @param dimension
@@ -425,6 +457,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // SWITCH FINAL -----------------------------------------------------------------------------------
+        // Realmente no había que implementarlo otra vez, pero iba a usar este método para el siguiente
+        // intento de recursividad, así que lo dejaré para versiones posteriores.
         if (!(plantilla[i][j] == -1)) {
             switch (contMinas) {
                 case 0:
@@ -483,6 +517,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    // Un error se corrigió declarando este método sobre el siguiente.
     public void seleccionarDificultad(View view) {
         registerForContextMenu(view);
         openContextMenu(view);
@@ -494,6 +529,13 @@ public class MainActivity extends AppCompatActivity {
         MenuInflater mi = getMenuInflater();
         mi.inflate(R.menu.dificultad_menu, menu);
     }
+
+    /**
+     * Funcionalidad del menú de los tres puntos.
+     *
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
@@ -530,6 +572,13 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Funcionalidad de cada elemento del ContextMenu
+     * (los RadioButton) que cambian la dificultad.
+     *
+     * @param item
+     * @return
+     */
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getItemId()) {
